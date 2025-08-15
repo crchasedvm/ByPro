@@ -71,8 +71,9 @@
                     <div class="ml-10 flex items-baseline space-x-4">
                         <a href="#overview" class="nav-link px-3 py-2 text-sm font-medium text-gray-600 border-b-2 border-transparent">Overview</a>
                         <a href="#production" class="nav-link px-3 py-2 text-sm font-medium text-gray-600 border-b-2 border-transparent">Production Gains</a>
+                        <a href="#health-stability" class="nav-link px-3 py-2 text-sm font-medium text-gray-600 border-b-2 border-transparent">Rumen Stability</a>
                         <a href="#environment" class="nav-link px-3 py-2 text-sm font-medium text-gray-600 border-b-2 border-transparent">Environmental Benefits</a>
-                        <a href="#health" class="nav-link px-3 py-2 text-sm font-medium text-gray-600 border-b-2 border-transparent">Animal Health</a>
+                        <a href="#proactive-health" class="nav-link px-3 py-2 text-sm font-medium text-gray-600 border-b-2 border-transparent">Proactive Health</a>
                         <a href="#science" class="nav-link px-3 py-2 text-sm font-medium text-gray-600 border-b-2 border-transparent">The Science</a>
                     </div>
                 </div>
@@ -293,7 +294,32 @@
             </div>
         </section>
 
-        <section id="environment" class="py-16 sm:py-20">
+        <section id="health-stability" class="py-16 sm:py-20">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h3 class="text-3xl font-bold text-green-900">Rumen Stability: Preventing Acidosis & Bloat</h3>
+                    <p class="mt-4 text-md text-gray-600 max-w-4xl mx-auto">By modulating rumen fermentation, ByPro helps prevent costly metabolic dysfunctions that impair animal welfare and productivity.</p>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                    <div class="bg-white p-8 rounded-xl shadow-md">
+                        <h4 class="text-2xl font-semibold text-gray-800 mb-4 text-center">Acidosis Prevention</h4>
+                        <p class="text-sm text-center text-gray-600 mb-6">In high-starch diets, ByPro slows starch fermentation and promotes saliva production, preventing sharp drops in ruminal pH and maintaining a healthier rumen environment.</p>
+                        <div class="chart-container" style="height: 300px; max-height: 35vh;">
+                            <canvas id="acidosisChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white p-8 rounded-xl shadow-md">
+                        <h4 class="text-2xl font-semibold text-gray-800 mb-4 text-center">Bloat Prevention</h4>
+                         <p class="text-sm text-center text-gray-600 mb-6">By binding soluble plant proteins, ByPro disrupts the formation of stable foam that traps fermentation gases. In a trial with grazing cows, ByPro reduced the overall incidence of bloat by 13% and eliminated deadly cases.</p>
+                        <div class="chart-container" style="height: 300px; max-height: 35vh;">
+                            <canvas id="bloatChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="environment" class="py-16 sm:py-20 bg-stone-50">
             <div class="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="text-center mb-12">
                     <h3 class="text-3xl font-bold text-green-900">Environmental Benefits</h3>
@@ -335,7 +361,7 @@
             </div>
         </section>
 
-        <section id="health" class="py-16 sm:py-20 bg-stone-50">
+        <section id="proactive-health" class="py-16 sm:py-20 bg-stone-50">
             <div class="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="text-center mb-12">
                     <h3 class="text-3xl font-bold text-green-900">Proactive Animal Health</h3>
@@ -683,6 +709,66 @@
                     },
                     scales: {
                         y: { beginAtZero: false, title: { display: true, text: 'Milk Urea (mg/dl)' } }
+                    }
+                }
+            });
+
+            // Acidosis Chart
+            const acidosisCtx = document.getElementById('acidosisChart').getContext('2d');
+            new Chart(acidosisCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Control', 'Silvafeed ByPro'],
+                    datasets: [{
+                        label: 'Ruminal pH',
+                        data: [6.0, 6.4],
+                        backgroundColor: ['rgba(209, 213, 219, 0.8)', 'rgba(39, 103, 73, 0.8)'],
+                        borderColor: ['rgba(156, 163, 175, 1)', 'rgba(39, 103, 73, 1)'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: 'Ruminal pH in High-Starch Diets' },
+                        legend: { display: false }
+                    },
+                    scales: { y: { beginAtZero: false, suggestedMin: 5.5, suggestedMax: 7.0, title: { display: true, text: 'pH' } } }
+                }
+            });
+
+            // Bloat Chart
+            const bloatCtx = document.getElementById('bloatChart').getContext('2d');
+            new Chart(bloatCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Light', 'Moderate', 'Severe', 'Deadly'],
+                    datasets: [
+                        {
+                            label: 'Control',
+                            data: [40, 57, 24, 3],
+                            backgroundColor: 'rgba(209, 213, 219, 0.8)',
+                            borderColor: 'rgba(156, 163, 175, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Silvafeed ByPro',
+                            data: [34, 50, 24, 0],
+                            backgroundColor: 'rgba(39, 103, 73, 0.8)',
+                            borderColor: 'rgba(39, 103, 73, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: 'Incidence & Severity of Pasture Bloat' },
+                    },
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Number of Affected Cows' } }
                     }
                 }
             });
