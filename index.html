@@ -299,27 +299,35 @@
                     <h3 class="text-3xl font-bold text-green-900">Environmental Benefits</h3>
                     <p class="mt-4 text-md text-gray-600 max-w-4xl mx-auto">ByPro addresses two of livestock's biggest environmental challenges: methane emissions and nitrogen pollution.</p>
                 </div>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
                     <div class="bg-white p-8 rounded-xl shadow-md text-center">
                         <h4 class="text-2xl font-semibold text-gray-800 mb-4">Enteric Methane Reduction</h4>
                         <p class="text-6xl font-bold text-green-700">12-35%</p>
                         <p class="mt-4 text-gray-600">By directly inhibiting methane-producing microbes (methanogens) in the rumen, ByPro significantly cuts emissions of this potent greenhouse gas, which also represents a loss of dietary energy.</p>
                     </div>
                     <div class="bg-white p-8 rounded-xl shadow-md">
-                        <h4 class="text-2xl font-semibold text-gray-800 mb-6 text-center">A Beneficial Shift in Nitrogen Excretion</h4>
-                        <div class="flex items-center justify-around">
-                            <div class="text-center">
-                                <p class="font-semibold text-gray-700">Without ByPro</p>
-                                <div class="mt-2 text-4xl">💧</div>
-                                <p class="mt-2 font-bold text-red-600">High Urinary N</p>
-                                <p class="text-xs text-gray-500">Leads to volatile ammonia & nitrous oxide ($N_2O$) emissions.</p>
+                        <h4 class="text-2xl font-semibold text-gray-800 mb-4 text-center">Milk Urea Reduction in Grazing Cows</h4>
+                        <p class="text-sm text-center text-gray-600 mb-6">This trial shows a strong reduction of milk urea in grazing cows with access to alfalfa pasture rich in degradable protein, especially in weeks 2 and 3.</p>
+                        <div class="chart-container" style="height: 300px; max-height: 35vh;">
+                            <canvas id="milkUreaChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                 <div class="bg-white p-6 sm:p-8 rounded-xl shadow-md mt-8">
+                    <h4 class="text-2xl font-semibold text-gray-800 mb-4 text-center">Improved Nitrogen Efficiency</h4>
+                    <p class="text-sm text-center text-gray-600 mb-6">ByPro improves protein metabolism, shifting nitrogen excretion from volatile urine to more stable feces. This reduces ammonia emissions and lowers both milk and blood urea nitrogen (MUN & BUN).</p>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                        <div class="chart-container" style="height: 250px; max-height: 30vh;">
+                            <canvas id="nitrogenChart"></canvas>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 text-center">
+                            <div class="bg-stone-50 p-4 rounded-lg">
+                                <p class="text-sm font-medium text-gray-500">MUN Reduction</p>
+                                <p class="text-2xl font-bold text-green-700">-7%</p>
                             </div>
-                            <div class="text-center text-3xl font-bold text-green-700 mx-4">&rarr;</div>
-                            <div class="text-center">
-                                <p class="font-semibold text-gray-700">With ByPro</p>
-                                <div class="mt-2 text-4xl">💩</div>
-                                <p class="mt-2 font-bold text-green-800">High Fecal N</p>
-                                <p class="text-xs text-gray-500">Nitrogen is bound in a more stable form, reducing pollution.</p>
+                            <div class="bg-stone-50 p-4 rounded-lg">
+                                <p class="text-sm font-medium text-gray-500">BUN Reduction</p>
+                                <p class="text-2xl font-bold text-green-700">-12%</p>
                             </div>
                         </div>
                     </div>
@@ -603,6 +611,79 @@
                         legend: { display: false }
                     },
                     scales: { y: { beginAtZero: false, title: { display: true, text: 'kg/day' } } }
+                }
+            });
+
+            // Nitrogen Charts
+            const nitrogenCtx = document.getElementById('nitrogenChart').getContext('2d');
+            new Chart(nitrogenCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Control', 'Silvafeed ByPro'],
+                    datasets: [
+                        {
+                            label: 'Faecal N',
+                            data: [214, 234],
+                            backgroundColor: 'rgba(109, 71, 41, 0.8)',
+                            borderColor: 'rgba(109, 71, 41, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Urinary N',
+                            data: [213, 201],
+                            backgroundColor: 'rgba(252, 211, 77, 0.8)',
+                            borderColor: 'rgba(252, 211, 77, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: 'Nitrogen Excretion Partition (g/d)', font: {size: 14}},
+                        tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.raw} g/d` } }
+                    },
+                    scales: {
+                        x: { stacked: true, title: { display: true, text: 'g/day' } },
+                        y: { stacked: true }
+                    }
+                }
+            });
+
+            const milkUreaCtx = document.getElementById('milkUreaChart').getContext('2d');
+            new Chart(milkUreaCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'],
+                    datasets: [
+                        {
+                            label: 'Control',
+                            data: [20.7, 32.0, 39.4, 45.0, 37.5],
+                            backgroundColor: 'rgba(209, 213, 219, 0.8)',
+                            borderColor: 'rgba(156, 163, 175, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Silvafeed ByPro',
+                            data: [19.6, 28.9, 36.6, 43.3, 37.2],
+                            backgroundColor: 'rgba(39, 103, 73, 0.8)',
+                            borderColor: 'rgba(39, 103, 73, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: 'Milk Urea Over Time', font: {size: 16}},
+                        tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.raw} mg/dl` } }
+                    },
+                    scales: {
+                        y: { beginAtZero: false, title: { display: true, text: 'Milk Urea (mg/dl)' } }
+                    }
                 }
             });
 
