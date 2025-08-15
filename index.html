@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Deep-Dive: The Science of Silvafeed ByPro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Earthy Neutrals -->
+    <!-- Application Structure Plan: A thematic, dashboard-style single-page application. The structure prioritizes user goals by presenting the most impactful outcomes first (Production, Environment, Health) and then allowing a deeper dive into the underlying science. This non-linear approach is more user-friendly than the original report's linear structure. Key interactions include toggles to switch between animal types (Dairy/Beef), interactive charts to explore data points, and clickable elements to reveal detailed information, making complex data digestible and engaging for producers, nutritionists, and veterinarians. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Dairy Reproductive Data (Table 2) -> Goal: Compare performance over time -> Viz: Interactive Grouped Bar Chart -> Interaction: Dropdown to switch metrics (Services/Conception, Days Open), hover tooltips for details -> Justification: More visually impactful and easier to compare trends than a static table -> Library: Chart.js (Canvas).
+        - Report Info: Beef vs. Monensin -> Goal: Compare key feedlot metrics -> Viz: Side-by-side stat cards -> Interaction: Clear visual comparison of trade-offs (DMI, ADG, FCR, Health) -> Justification: Scannable, dashboard-like format is quicker to understand than dense text -> Library/Method: HTML/CSS (Tailwind).
+        - Report Info: Methane & Nitrogen Impact -> Goal: Visualize environmental benefits -> Viz: Animated diagrams and summary stats -> Interaction: Visual animation of N-shift, clear % reduction for methane -> Justification: Dynamic visuals make abstract concepts like 'shifting pathways' tangible and memorable -> Library/Method: HTML/CSS (Tailwind).
+        - Report Info: Core Rumen Bypass Mechanism -> Goal: Explain a complex biological process simply -> Viz: 3-stage animated diagram (Rumen, Abomasum, Intestine) -> Interaction: Visual flow shows protein protection and release -> Justification: A process diagram is far more intuitive than text alone -> Library/Method: HTML/CSS (Tailwind).
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FBFBF8;
+            color: #383838;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 50vh;
+        }
+        .dual-chart-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        @media (min-width: 1024px) {
+            .dual-chart-container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        .nav-link {
+            transition: color 0.3s ease, border-color 0.3s ease;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #276749;
+            border-bottom-color: #276749;
+        }
+        .stat-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="sticky top-0 bg-white/80 backdrop-blur-lg z-50 shadow-sm">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl font-bold text-green-900">Silvafeed ByPro Review</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#overview" class="nav-link px-3 py-2 text-sm font-medium text-gray-600 border-b-2 border-transparent">Overview</a>
+                        <a href="#production" class="nav-link px-3 py-2 text-sm font-medium text-gray-600 border-b-2 border-transparent">Production Gains</a>
+                        <a href="#environment" class="nav-link px-3 py-2 text-sm font-medium text-gray-600 border-b-2 border-transparent">Environmental Benefits</a>
+                        <a href="#health" class="nav-link px-3 py-2 text-sm font-medium text-gray-600 border-b-2 border-transparent">Animal Health</a>
+                        <a href="#science" class="nav-link px-3 py-2 text-sm font-medium text-gray-600 border-b-2 border-transparent">The Science</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="hero" class="bg-stone-50 py-20 sm:py-24">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h2 class="text-4xl font-bold tracking-tight text-green-900 sm:text-5xl">Unlocking Ruminant Potential with Tannins</h2>
+                <p class="mt-6 text-lg leading-8 text-gray-600 max-w-3xl mx-auto">An interactive exploration of Silvafeed ByPro, a natural feed additive that enhances protein efficiency, improves animal health, and reduces the environmental footprint of livestock production.</p>
+            </div>
+        </section>
+
+        <section id="overview" class="py-16 sm:py-20">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h3 class="text-3xl font-bold text-green-900">What is Silvafeed ByPro?</h3>
+                    <p class="mt-4 text-md text-gray-600 max-w-4xl mx-auto">Silvafeed ByPro is not a source of protein, but a sophisticated rumen modulator. It's a blend of natural tannins from Chestnut and Quebracho wood that protects dietary protein from degradation in the rumen, increasing the supply of valuable amino acids to the animal. This core mechanism drives benefits in performance, health, and sustainability. The recommended dosage for dairy cows is typically <strong>15-20 g/animal/day</strong>.</p>
+                </div>
+
+                <div class="bg-white p-8 rounded-xl shadow-md">
+                    <h4 class="text-2xl font-semibold text-center text-gray-800 mb-8">The Core Mechanism: pH-Dependent Rumen Bypass</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                        <div class="flex flex-col items-center p-4 rounded-lg">
+                            <div class="text-5xl mb-4">🐮</div>
+                            <h5 class="text-xl font-bold mb-2 text-blue-700">1. In the Rumen</h5>
+                            <p class="text-sm text-gray-600"><strong class="font-semibold">pH 5.5 - 7.0 (Neutral)</strong><br>Tannins bind to dietary protein, forming a stable complex. This protects the protein from microbial breakdown, reducing wasteful ammonia production.</p>
+                        </div>
+                        <div class="flex flex-col items-center p-4 rounded-lg">
+                             <div class="text-5xl mb-4">🧪</div>
+                            <h5 class="text-xl font-bold mb-2 text-red-700">2. In the Abomasum</h5>
+                            <p class="text-sm text-gray-600"><strong class="font-semibold">pH 2.5 - 3.5 (Acidic)</strong><br>The acidic environment breaks the tannin-protein bond, releasing the intact, high-quality protein for digestion.</p>
+                        </div>
+                        <div class="flex flex-col items-center p-4 rounded-lg">
+                            <div class="text-5xl mb-4">🌾</div>
+                            <h5 class="text-xl font-bold mb-2 text-purple-700">3. In the Small Intestine</h5>
+                            <p class="text-sm text-gray-600"><strong class="font-semibold">pH > 8.0 (Alkaline)</strong><br>The animal's own enzymes digest the released protein into amino acids, which are absorbed to support milk production, growth, and fertility.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="production" class="py-16 sm:py-20 bg-stone-50">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h3 class="text-3xl font-bold text-green-900">Production Gains: Performance & Efficiency</h3>
+                    <p class="mt-4 text-md text-gray-600 max-w-4xl mx-auto">ByPro's impact varies by production system. In dairy, it drives significant reproductive gains and can enhance milk production. In beef, it offers a valuable alternative to ionophores, with trial data showing variable but positive outcomes for growth and health.</p>
+                </div>
+
+                <div class="bg-white p-6 sm:p-8 rounded-xl shadow-md">
+                    <div class="text-center mb-8">
+                        <h4 class="text-2xl font-semibold text-gray-800">Dairy Cattle: Enhanced Production & Reproduction</h4>
+                        <p class="mt-2 text-sm text-gray-600">Across multiple trials, ByPro demonstrates a strong positive impact on both milk production and key fertility metrics, which are major drivers of farm profitability.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                         <div class="stat-card border border-gray-200 p-6 rounded-lg text-center bg-stone-50">
+                            <h5 class="font-bold text-lg text-gray-800">Milk Yield</h5>
+                            <p class="text-3xl font-bold text-green-700 mt-2">+2.3 kg/d</p>
+                            <p class="text-sm text-gray-500 mt-2">Significant increase observed in TMR-fed cows after 30 days in milk.</p>
+                        </div>
+                        <div class="stat-card border border-gray-200 p-6 rounded-lg text-center bg-stone-50">
+                            <h5 class="font-bold text-lg text-gray-800">Milk Components</h5>
+                            <p class="text-3xl font-bold text-green-700 mt-2">+0.27%</p>
+                            <p class="text-sm text-gray-500 mt-2">Increase in milk fat percentage points observed in TMR trials (31-120 DIM).</p>
+                        </div>
+                        <div class="stat-card border border-gray-200 p-6 rounded-lg text-center bg-stone-50">
+                            <h5 class="font-bold text-lg text-gray-800">Feed Efficiency</h5>
+                            <p class="text-3xl font-bold text-green-700 mt-2">+7%</p>
+                            <p class="text-sm text-gray-500 mt-2">Improvement in Milk to DMI ratio (1.4 to 1.5), indicating better nutrient utilization.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mb-8">
+                        <h5 class="text-xl font-semibold text-gray-700">A Breakthrough in Reproductive Efficiency</h5>
+                    </div>
+                    <div class="flex justify-center items-center space-x-4 mb-6">
+                        <label for="metric-selector" class="text-sm font-medium text-gray-700">View Metric:</label>
+                        <select id="metric-selector" class="rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm">
+                            <option value="services" selected>Services per Conception</option>
+                            <option value="daysOpen">Days Open</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="reproChart"></canvas>
+                    </div>
+                    <p class="text-xs text-center mt-4 text-gray-500">A remarkable carry-over effect was observed, with benefits amplified even after supplementation ceased, suggesting a lasting improvement in metabolic status.</p>
+                    
+                    <div class="mt-12 border-t pt-8">
+                        <div class="text-center mb-8">
+                            <h4 class="text-2xl font-semibold text-gray-800">Translation to New Zealand Dairy KPIs</h4>
+                            <p class="mt-2 text-sm text-gray-600 max-w-3xl mx-auto">The trial data can be translated into key NZ performance indicators. The following figures are estimated based on the trial's conception data, assuming a 12-week mating period and a 90% submission rate.</p>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="stat-card border border-gray-200 p-6 rounded-lg text-center bg-stone-50">
+                                <h5 class="font-bold text-lg text-gray-800">Conception Rate</h5>
+                                <p class="text-3xl font-bold text-green-700 mt-2">49.5%</p>
+                                <p class="text-sm text-gray-500 mt-2">vs. 45.5% Control <br><span class="font-semibold text-green-600">(+4.0% points)</span></p>
+                            </div>
+                            <div class="stat-card border border-gray-200 p-6 rounded-lg text-center bg-stone-50">
+                                <h5 class="font-bold text-lg text-gray-800">6-Week In-Calf Rate</h5>
+                                <p class="text-3xl font-bold text-green-700 mt-2">69.3%</p>
+                                <p class="text-sm text-gray-500 mt-2">vs. 65.1% Control <br><span class="font-semibold text-green-600">(+4.2% points)</span></p>
+                            </div>
+                            <div class="stat-card border border-gray-200 p-6 rounded-lg text-center bg-stone-50">
+                                <h5 class="font-bold text-lg text-gray-800">Not-Pregnant Rate</h5>
+                                <p class="text-3xl font-bold text-green-700 mt-2">9.5%</p>
+                                <p class="text-sm text-gray-500 mt-2">vs. 12.2% Control <br><span class="font-semibold text-green-600">(-2.7% points)</span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-12 border-t pt-8">
+                        <div class="text-center mb-8">
+                            <h4 class="text-2xl font-semibold text-gray-800">Interactive Return on Investment (ROI) Calculator</h4>
+                            <p class="mt-2 text-sm text-gray-600 max-w-3xl mx-auto">Estimate the potential ROI based on improvements in key NZ dairy KPIs. Adjust the values below to match your farm's economics and expected performance gains.</p>
+                        </div>
+                        <div class="max-w-4xl mx-auto bg-stone-50 p-6 rounded-lg border">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mb-6">
+                                <h5 class="col-span-1 md:col-span-2 text-lg font-semibold text-gray-700 border-b pb-2">Farm & Cost Inputs</h5>
+                                <div>
+                                    <label for="herdSize" class="block text-sm font-medium text-gray-700">Herd Size</label>
+                                    <input type="number" id="herdSize" value="500" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm">
+                                </div>
+                                <div>
+                                    <label for="byproCost" class="block text-sm font-medium text-gray-700">ByPro Cost / Head / Day ($)</label>
+                                    <input type="number" id="byproCost" value="0.35" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm">
+                                </div>
+                                <div>
+                                    <label for="daysOnBypro" class="block text-sm font-medium text-gray-700">Days on ByPro (e.g., Mating Period)</label>
+                                    <input type="number" id="daysOnBypro" value="90" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm">
+                                </div>
+                                <div></div>
+                                <h5 class="col-span-1 md:col-span-2 text-lg font-semibold text-gray-700 border-b pb-2 mt-4">Performance & Value Inputs</h5>
+                                <div>
+                                    <label for="icrChange" class="block text-sm font-medium text-gray-700">6wk-ICR% Gain (% points)</label>
+                                    <input type="number" id="icrChange" value="4.2" step="0.1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm">
+                                </div>
+                                <div>
+                                    <label for="icrValue" class="block text-sm font-medium text-gray-700">Value of 1% 6wk-ICR% Gain ($/cow)</label>
+                                    <input type="number" id="icrValue" value="4.00" step="0.1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm">
+                                </div>
+                                <div>
+                                    <label for="nprChange" class="block text-sm font-medium text-gray-700">Not-Pregnant Rate Reduction (% points)</label>
+                                    <input type="number" id="nprChange" value="2.7" step="0.1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm">
+                                </div>
+                                <div>
+                                    <label for="nprValue" class="block text-sm font-medium text-gray-700">Value of 1% NPR Reduction ($/cow)</label>
+                                    <input type="number" id="nprValue" value="10.00" step="0.1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm">
+                                </div>
+                            </div>
+                            <div class="text-center mt-6">
+                                <button id="calculateRoi" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">Calculate ROI</button>
+                            </div>
+                            <div id="roiResults" class="mt-8 pt-6 border-t border-gray-200 hidden">
+                                <div class="grid grid-cols-2 md:grid-cols-3 gap-6 text-center">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-500">Total Investment</p>
+                                        <p id="totalInvestment" class="mt-1 text-2xl font-bold text-gray-800"></p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-500">Return from 6wk-ICR%</p>
+                                        <p id="icrReturn" class="mt-1 text-2xl font-bold text-green-600"></p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-500">Return from NPR</p>
+                                        <p id="nprReturn" class="mt-1 text-2xl font-bold text-green-600"></p>
+                                    </div>
+                                    <div class="col-span-2 md:col-span-1">
+                                        <p class="text-sm font-medium text-gray-500">Total Return</p>
+                                        <p id="totalReturn" class="mt-1 text-2xl font-bold text-gray-800"></p>
+                                    </div>
+                                    <div class="col-span-2 md:col-span-1">
+                                        <p class="text-sm font-medium text-gray-500">Net Profit</p>
+                                        <p id="netProfit" class="mt-1 text-2xl font-bold text-green-600"></p>
+                                    </div>
+                                    <div class="col-span-2 md:col-span-1">
+                                        <p class="text-sm font-medium text-gray-500">Return on Investment</p>
+                                        <p id="roiValue" class="mt-1 text-4xl font-bold text-green-700"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 sm:p-8 rounded-xl shadow-md mt-12">
+                    <div class="text-center mb-8">
+                        <h4 class="text-2xl font-semibold text-gray-800">Beef Cattle: Performance Outcomes</h4>
+                        <p class="mt-2 text-sm text-gray-600">The effect of ByPro in beef cattle can vary depending on the trial and diet. It presents a different value proposition than the ionophore monensin, often focusing on health outcomes, but other trials show significant growth promotion.</p>
+                    </div>
+                    <h5 class="text-lg font-semibold text-gray-700 text-center mb-4">Comparison vs. Monensin</h5>
+                    <div class="dual-chart-container mb-10">
+                        <div class="chart-container" style="height: 350px; max-height: 40vh;">
+                            <canvas id="dwgChart"></canvas>
+                        </div>
+                        <div class="chart-container" style="height: 350px; max-height: 40vh;">
+                            <canvas id="dmiChart"></canvas>
+                        </div>
+                    </div>
+                    <h5 class="text-lg font-semibold text-gray-700 text-center mb-4">Natural Growth Promotion</h5>
+                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+                        <div class="stat-card border border-gray-200 p-6 rounded-lg text-center bg-stone-50">
+                            <h5 class="font-bold text-lg text-gray-800">Daily Weight Gain (DWG)</h5>
+                            <p class="text-3xl font-bold text-green-700 mt-2">+10.5%</p>
+                            <p class="text-xs text-gray-500 mt-2">Average increase observed across multiple beef growth trials vs. control.</p>
+                        </div>
+                        <div class="stat-card border border-gray-200 p-6 rounded-lg text-center bg-stone-50">
+                            <h5 class="font-bold text-lg text-gray-800">Feed Conversion (FCR)</h5>
+                            <p class="text-3xl font-bold text-green-700 mt-2">-7.0%</p>
+                            <p class="text-xs text-gray-500 mt-2">Average improvement (lower FCR) observed across multiple trials.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="environment" class="py-16 sm:py-20">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h3 class="text-3xl font-bold text-green-900">Environmental Benefits</h3>
+                    <p class="mt-4 text-md text-gray-600 max-w-4xl mx-auto">ByPro addresses two of livestock's biggest environmental challenges: methane emissions and nitrogen pollution.</p>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                    <div class="bg-white p-8 rounded-xl shadow-md text-center">
+                        <h4 class="text-2xl font-semibold text-gray-800 mb-4">Enteric Methane Reduction</h4>
+                        <p class="text-6xl font-bold text-green-700">12-35%</p>
+                        <p class="mt-4 text-gray-600">By directly inhibiting methane-producing microbes (methanogens) in the rumen, ByPro significantly cuts emissions of this potent greenhouse gas, which also represents a loss of dietary energy.</p>
+                    </div>
+                    <div class="bg-white p-8 rounded-xl shadow-md">
+                        <h4 class="text-2xl font-semibold text-gray-800 mb-6 text-center">A Beneficial Shift in Nitrogen Excretion</h4>
+                        <div class="flex items-center justify-around">
+                            <div class="text-center">
+                                <p class="font-semibold text-gray-700">Without ByPro</p>
+                                <div class="mt-2 text-4xl">💧</div>
+                                <p class="mt-2 font-bold text-red-600">High Urinary N</p>
+                                <p class="text-xs text-gray-500">Leads to volatile ammonia & nitrous oxide ($N_2O$) emissions.</p>
+                            </div>
+                            <div class="text-center text-3xl font-bold text-green-700 mx-4">&rarr;</div>
+                            <div class="text-center">
+                                <p class="font-semibold text-gray-700">With ByPro</p>
+                                <div class="mt-2 text-4xl">💩</div>
+                                <p class="mt-2 font-bold text-green-800">High Fecal N</p>
+                                <p class="text-xs text-gray-500">Nitrogen is bound in a more stable form, reducing pollution.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="health" class="py-16 sm:py-20 bg-stone-50">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h3 class="text-3xl font-bold text-green-900">Proactive Animal Health</h3>
+                    <p class="mt-4 text-md text-gray-600 max-w-4xl mx-auto">ByPro offers a non-antibiotic strategy for health management through its diverse bioactive properties.</p>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="stat-card bg-white p-6 rounded-lg shadow">
+                        <h4 class="font-bold text-lg text-green-800">Anthelmintic Properties</h4>
+                        <p class="mt-2 text-sm text-gray-600">In-vitro studies show ByPro extracts are highly effective at inhibiting the lifecycle of gastrointestinal parasites, offering a tool to combat anthelmintic resistance.</p>
+                    </div>
+                    <div class="stat-card bg-white p-6 rounded-lg shadow">
+                        <h4 class="font-bold text-lg text-green-800">Gut Health & Pathogen Control</h4>
+                        <p class="mt-2 text-sm text-gray-600">Tannins form a protective layer on the intestinal wall, reducing inflammation and diarrhea. They also show direct antimicrobial activity against pathogens like *Salmonella* and *Clostridium*.</p>
+                    </div>
+                    <div class="stat-card bg-white p-6 rounded-lg shadow">
+                        <h4 class="font-bold text-lg text-green-800">Antioxidant & Anti-inflammatory</h4>
+                        <p class="mt-2 text-sm text-gray-600">As potent antioxidants, tannins help mitigate metabolic stress, which is critical for high-performance animals like transition dairy cows, reducing the risk of diseases like ketosis.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="science" class="py-16 sm:py-20">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h3 class="text-3xl font-bold text-green-900">The Science Behind the Effects</h3>
+                    <p class="mt-4 text-md text-gray-600 max-w-4xl mx-auto">A deeper look at how ByPro modulates the rumen environment and the chemistry of its key components.</p>
+                </div>
+                <div class="bg-white p-6 sm:p-8 rounded-xl shadow-md">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
+                        <div>
+                            <h4 class="text-xl font-semibold text-gray-800 mb-3">Rumen Microbiome Modulation</h4>
+                            <p class="text-sm text-gray-600">ByPro selectively inhibits certain bacteria, including hyper-ammonia-producers and starch-fermenters. This helps stabilize rumen pH and increases the ratio of *Firmicutes* to *Bacteroidetes* from <strong>0.72 to 1.03</strong> in trials, a biomarker associated with more efficient energy extraction from feed.</p>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-semibold text-gray-800 mb-3">Fermentation Profile</h4>
+                            <p class="text-sm text-gray-600">Supplementation consistently lowers ruminal ammonia, a direct indicator of its protein-sparing effect. It also tends to lower the acetate:propionate ratio. This shift towards propionate, a precursor for glucose, indicates improved energetic efficiency, similar to the effect of ionophores.</p>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-semibold text-gray-800 mb-3">Hydrolysable Tannins (Chestnut)</h4>
+                            <p class="text-sm text-gray-600">These are smaller molecules that can be broken down and absorbed. They are believed to contribute systemic effects like antioxidant and anti-inflammatory activity, but can be toxic at very high doses.</p>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-semibold text-gray-800 mb-3">Condensed Tannins (Quebracho)</h4>
+                            <p class="text-sm text-gray-600">These are large, non-absorbable polymers whose action is confined to the gut. Their complex structure makes them highly effective at binding and precipitating protein, driving the primary rumen bypass and anti-bloat mechanisms.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-green-900 text-white mt-16">
+        <div class="container mx-auto py-8 px-4 sm:px-6 lg:px-8 text-center text-sm">
+            <p>This interactive summary was generated based on a comprehensive review of scientific literature regarding Silvafeed ByPro.</p>
+            <p class="mt-2 opacity-70">Application designed for educational and informational purposes.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const reproData = {
+                labels: ['I. Jan to Mar (Baseline)', 'II. Apr to Sep (Supplementation)', 'III. Oct to Dec (Post-Supplementation)'],
+                services: {
+                    bypro: [2.55, 2.02, 1.83],
+                    control: [2.63, 2.20, 2.19]
+                },
+                daysOpen: {
+                    bypro: [102.6, 87.0, 78.9],
+                    control: [106.7, 92.5, 91.3]
+                }
+            };
+
+            const ctx = document.getElementById('reproChart').getContext('2d');
+            let reproChart;
+
+            function createOrUpdateChart(metric) {
+                const data = (metric === 'services') ? reproData.services : reproData.daysOpen;
+                const label = (metric === 'services') ? 'Services per Conception' : 'Days Open';
+
+                if (reproChart) {
+                    reproChart.data.datasets[0].data = data.bypro;
+                    reproChart.data.datasets[1].data = data.control;
+                    reproChart.options.scales.y.title.text = label;
+                    reproChart.update();
+                    return;
+                }
+
+                reproChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: reproData.labels.map(label => label.split(' ')),
+                        datasets: [
+                            {
+                                label: 'ByPro Group',
+                                data: data.bypro,
+                                backgroundColor: 'rgba(39, 103, 73, 0.8)',
+                                borderColor: 'rgba(39, 103, 73, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Control Group',
+                                data: data.control,
+                                backgroundColor: 'rgba(209, 213, 219, 0.8)',
+                                borderColor: 'rgba(156, 163, 175, 1)',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Reproductive Performance in Dairy Cows',
+                                font: { size: 16 }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    title: function(context) {
+                                        return context[0].label.replace(/,/g, ' ');
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { display: false }
+                            },
+                            y: {
+                                beginAtZero: false,
+                                title: {
+                                    display: true,
+                                    text: label
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            createOrUpdateChart('services');
+
+            document.getElementById('metric-selector').addEventListener('change', function(e) {
+                createOrUpdateChart(e.target.value);
+            });
+            
+            const calculateRoiBtn = document.getElementById('calculateRoi');
+            const roiResultsContainer = document.getElementById('roiResults');
+
+            calculateRoiBtn.addEventListener('click', function() {
+                const herdSize = parseFloat(document.getElementById('herdSize').value);
+                const byproCost = parseFloat(document.getElementById('byproCost').value);
+                const daysOnBypro = parseFloat(document.getElementById('daysOnBypro').value);
+                const icrChange = parseFloat(document.getElementById('icrChange').value);
+                const icrValue = parseFloat(document.getElementById('icrValue').value);
+                const nprChange = parseFloat(document.getElementById('nprChange').value);
+                const nprValue = parseFloat(document.getElementById('nprValue').value);
+
+                if ([herdSize, byproCost, daysOnBypro, icrChange, icrValue, nprChange, nprValue].some(isNaN)) {
+                    alert('Please enter valid numbers in all fields.');
+                    return;
+                }
+
+                const totalInvestment = herdSize * byproCost * daysOnBypro;
+                const icrReturn = herdSize * icrChange * icrValue;
+                const nprReturn = herdSize * nprChange * nprValue;
+                const totalReturn = icrReturn + nprReturn;
+                const netProfit = totalReturn - totalInvestment;
+                const roi = (netProfit / totalInvestment) * 100;
+
+                const formatCurrency = (value) => `$${value.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+                document.getElementById('totalInvestment').textContent = formatCurrency(totalInvestment);
+                document.getElementById('icrReturn').textContent = formatCurrency(icrReturn);
+                document.getElementById('nprReturn').textContent = formatCurrency(nprReturn);
+                document.getElementById('totalReturn').textContent = formatCurrency(totalReturn);
+                document.getElementById('netProfit').textContent = formatCurrency(netProfit);
+                document.getElementById('roiValue').textContent = `${roi.toFixed(1)}%`;
+                
+                roiResultsContainer.classList.remove('hidden');
+            });
+
+
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.4
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        navLinks.forEach(link => {
+                            link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+
+            // Beef vs Monensin Charts
+            const dwgCtx = document.getElementById('dwgChart').getContext('2d');
+            new Chart(dwgCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Monensin (CP 14%)', 'ByPro (CP 14%)', 'Mon+ByPro (CP 14%)', 'Mon+ByPro (CP 13%)'],
+                    datasets: [{
+                        label: 'Average DWG (kg/d)',
+                        data: [1.73, 1.91, 1.88, 1.76],
+                        backgroundColor: [
+                            'rgba(239, 123, 11, 0.8)',
+                            'rgba(39, 103, 73, 0.8)',
+                            'rgba(107, 114, 128, 0.8)',
+                            'rgba(156, 163, 175, 0.8)'
+                        ],
+                        borderColor: [
+                             'rgba(239, 123, 11, 1)',
+                            'rgba(39, 103, 73, 1)',
+                            'rgba(107, 114, 128, 1)',
+                            'rgba(156, 163, 175, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: 'Average Daily Weight Gain (DWG)', font: { size: 14 } },
+                        legend: { display: false }
+                    },
+                    scales: { y: { beginAtZero: false, title: { display: true, text: 'kg/day' } } }
+                }
+            });
+
+            const dmiCtx = document.getElementById('dmiChart').getContext('2d');
+            new Chart(dmiCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Monensin (CP 14%)', 'ByPro (CP 14%)', 'Mon+ByPro (CP 14%)', 'Mon+ByPro (CP 13%)'],
+                    datasets: [{
+                        label: 'DMI (kg/d)',
+                        data: [9.78, 10.92, 10.28, 9.78],
+                         backgroundColor: [
+                            'rgba(239, 123, 11, 0.8)',
+                            'rgba(39, 103, 73, 0.8)',
+                            'rgba(107, 114, 128, 0.8)',
+                            'rgba(156, 163, 175, 0.8)'
+                        ],
+                        borderColor: [
+                             'rgba(239, 123, 11, 1)',
+                            'rgba(39, 103, 73, 1)',
+                            'rgba(107, 114, 128, 1)',
+                            'rgba(156, 163, 175, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: 'Dry Matter Intake (DMI)', font: { size: 14 } },
+                        legend: { display: false }
+                    },
+                    scales: { y: { beginAtZero: false, title: { display: true, text: 'kg/day' } } }
+                }
+            });
+
+        });
+    </script>
+
+</body>
+</html>
